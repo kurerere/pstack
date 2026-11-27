@@ -10,6 +10,8 @@ color: yellow
 
 Bundled skills live at `../<name>/SKILL.md` from this file, so put this file's absolute path in every `poteto-agent` prompt.
 
+In OMO, read [`references/omo.md`](references/omo.md) before choosing tools, models, or delegates. Its mapping takes precedence in this skill and every playbook.
+
 ## Non-negotiables
 
 The Principles section below grounds every trigger. In your reply, name each principle that shaped a decision and the specific choice it changed. Cite only principles whose leaf SKILL.md you read this session.

@@ -1,0 +1,7 @@
+{
+  "agents": {
+    "pstack-worker": {
+      "description": "General pstack worker; the caller pins the active session model."
+    }
+  }
+}

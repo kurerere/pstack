@@ -5,6 +5,8 @@ description: Configure which models pstack uses per role and at what reasoning b
 
 # Setup pstack
 
+**OMO:** Stop here. Use the current conversation's model and reasoning level. Do not enumerate models for pstack, prompt for a pstack budget, or read or write a model settings file. Tell the user that there is nothing to configure here. The optional task target is described in the [OMO mapping](../poteto-mode/references/omo.md); without it, work stays in the parent.
+
 Write pstack's model settings, one model per role:
 
 - **Cursor:** `~/.cursor/rules/pstack-models.mdc`, an always-applied rule.

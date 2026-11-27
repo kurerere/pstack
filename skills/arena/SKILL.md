@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Arena
 
+In OMO, follow the installed [OMO mapping](../poteto-mode/references/omo.md) instead of selecting runner models. Use verified same-model seats and skip cross-judging. If the mapping or that task route is unavailable, compare alternatives in the parent, keep the rubric and verification, and report that no independent seats ran.
+
 Open a todolist with one entry per phase (Frame, Fan out, Cross-judge, Pick, Graft, Verify) before launching anything.
 
 ## Phase A: Frame

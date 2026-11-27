@@ -10,6 +10,8 @@ disable-model-invocation: true
 
 Keep it tight and on-topic. Read only what the in-scope threads need, then stop.
 
+In OMO, follow the installed [OMO mapping](../poteto-mode/references/omo.md) before locating history or choosing workers. If the mapping or the verified same-model task route is unavailable, search the workspace's accessible history and the shared record in the parent. Report missing history as a gap.
+
 Your context lives in two records. Your own chat history holds what you did and decided. The shared record holds everything that happened around the same code under other names: the symptoms users keep reporting, the fixes that shipped and got reverted, the errors still firing in prod. That second record lives in source control, the issue tracker, chat and issue channels, long-form docs, and error tracking. A feature with a long bug tail keeps most of its story there, so don't reconstruct it from your transcripts alone.
 
 Transcripts live where your harness keeps them. Each file is JSONL. Find the active workspace's directory for your harness. If you can't tell which harness you are, check which of these exist for this workspace:

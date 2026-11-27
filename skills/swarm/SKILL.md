@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Swarm
 
+In OMO, follow the installed [OMO mapping](../poteto-mode/references/omo.md) instead of selecting worker models. If the mapping or the verified same-model task route is unavailable, run the slices in the parent and retain the evidence requirements. Report serial coverage, not a parallel run or race.
+
 ## Start
 
 Open a todolist with one entry per phase before launching anything.

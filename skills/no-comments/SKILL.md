@@ -10,6 +10,8 @@ Spawn Comment Sicko. Act on accepted findings.
 
 Defer to Comment Sicko's fresh perspective.
 
+In OMO, follow the installed [OMO mapping](../poteto-mode/references/omo.md) before delegating. If the mapping or the verified same-model task route is unavailable, use the bundled Comment Sicko prompt in the parent, keep the audit step, and do not claim a fresh reviewer.
+
 ## Scope
 
 Use the caller's files or diff. Otherwise use the current diff against the base branch, default `main`, including the working tree.

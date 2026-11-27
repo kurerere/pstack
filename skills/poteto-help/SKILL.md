@@ -8,7 +8,9 @@ disable-model-invocation: true
 
 Answer the user's question about pstack, hand them a prompt they can send, and link the file the answer came from. For a help question, don't start the work. The user asked how, and a pstack run spends real tokens, so let them send the prompt.
 
-A message that asks for work, such as "use pstack to fix this bug", is not a help question. Read [`poteto-mode`](../poteto-mode/SKILL.md), do the work under it, and mention once that a Custom Mode keeps it on.
+A message that asks for work, such as "use pstack to fix this bug", is not a help question. Read [`poteto-mode`](../poteto-mode/SKILL.md) and do the work under it. In Cursor, mention once that a Custom Mode keeps it on.
+
+In OMO, use `$poteto-mode` and `$<skill-name>` when showing how to invoke a skill. For setup or model questions, use the existing skill manager and the current conversation's model controls. Do not ask about a pstack model rule, suggest running `setup-pstack`, or promise a Cursor Custom Mode or cloud agents. The [OMO mapping](../poteto-mode/references/omo.md) has the delegation limits.
 
 This file maps questions to the skills and guide pages that hold the answers. Those files own the details. Read the file you route to before you quote it, and trust it when it disagrees with this map. The links here point into the installed plugin, which the user may not be able to open, so give the user the file's public copy: `https://github.com/cursor/plugins/blob/main/pstack/` followed by its path.
 
