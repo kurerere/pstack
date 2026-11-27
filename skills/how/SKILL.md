@@ -10,8 +10,6 @@ Explore the codebase to answer "how does X work?" questions.
 
 If the scope is ambiguous, state your interpretation and explore. The user can redirect.
 
-In OMO, follow the installed [OMO mapping](../poteto-mode/references/omo.md) before delegating. If the mapping or the verified same-model task route is unavailable, do the read-only exploration and explanation in the parent.
-
 ## 1. Explain
 
 Spawn one read-only general-purpose subagent that explores and explains in one pass: `Task` with `subagent_type: generalPurpose` and `readonly: true` in Cursor, `Agent` in Claude Code (`subagent_type: general-purpose`), `task` in OpenCode (`subagent_type: general`), `spawn_agent` in Codex. If your harness has no subagent tool, as in Pi without an extension, do the exploring and writing yourself. Give it the user's question and this brief:

@@ -12,8 +12,6 @@ This skill orchestrates three others: an inline mining pass (see step 1), your h
 
 The skill-authoring skill is `create-skill` in Cursor (built in) or Anthropic's `skill-creator`. If you have neither, follow the Agent Skills format at agentskills.io. "`create-skill`" below means whichever of these you use.
 
-In OMO, follow the installed [OMO mapping](../poteto-mode/references/omo.md) before mining history. If the mapping or the verified same-model task route is unavailable, do any workspace-scoped mining in the parent. If scoped history is unavailable, skip mining and use the user's answers; do not search other workspaces.
-
 ## Flow
 
 ### 0. Check for an existing skill

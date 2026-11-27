@@ -1,6 +1,6 @@
 # pstack in OMO
 
-Import this checkout's skill folders with your existing skill manager, such as Magpie, and enable them for OMO. The interactive mode needs no OMO extension or pstack model settings file.
+Import the desired pstack skill folders into Magpie, including `poteto-mode`, and enable them for OMO. The [tool mapping](../../skills/poteto-mode/references/omo.md) ships inside `poteto-mode`, so it is available even when Magpie installs only the skill folders. No OMO extension or pstack model settings file is required.
 
 Start a task with `$poteto-mode` in the composer. For example:
 
@@ -8,26 +8,27 @@ Start a task with `$poteto-mode` in the composer. For example:
 $poteto-mode Trace how the retry limit is chosen. Cite the code that sets it and the code that uses it. Do not edit anything.
 ```
 
-You can also invoke `$arena`, `$swarm`, or `$interrogate` directly. Install `poteto-mode` alongside these skills to get the [shared OMO mapping](../../skills/poteto-mode/references/omo.md), which travels with the skill rather than this `docs/` directory. Install the other pstack skills the chosen workflow calls.
+## Standalone skill calls
+
+`$poteto-mode` loads the mapping itself. To also call pstack skills directly, such as `$swarm` or `$arena`, add this rule to Magpie's global instructions. It applies only in OMO:
+
+```markdown
+In OMO, before running any pstack skill, including a direct invocation, read
+`references/omo.md` relative to the installed `poteto-mode/SKILL.md` once per
+session. Apply its tool and model mappings in place of the skill's Cursor
+instructions. If the mapping or its verified task route is unavailable, do the
+work in the main conversation; do not select another worker model or read or
+write pstack model settings.
+```
+
+Until that rule is active, start with `$poteto-mode` rather than invoking pstack leaf skills on their own.
 
 ## Optional same-model tasks
 
-In a trusted workspace, add the [`pstack-worker` declaration](../../skills/poteto-mode/references/omo-worker.json) to `.omo/omo.json` and start a new OMO conversation. If the workspace already has `.omo/omo.json` or `.omo/omo.jsonc`, merge only `agents.pstack-worker` into that file. This declaration names a native task target; it contains no model, reasoning level, or fallback chain. Leave your Magpie prompt unchanged.
+In a trusted workspace, add the [`pstack-worker` declaration](../../skills/poteto-mode/references/omo-worker.json) to `.omo/omo.json` and start a new OMO conversation. If the workspace already has `.omo/omo.json` or `.omo/omo.jsonc`, merge only `agents.pstack-worker` into that file. This declaration names a native task target; it contains no model, reasoning level, or fallback chain.
 
 Choose the model and reasoning level in OMO's conversation controls. `setup-pstack` is a no-op in OMO. When a pstack playbook delegates, it reads the live settings and uses those exact values for each native `task`. It accepts only matching OMO receipts, never another model or a category fallback. Arena and Interrogate can run three independent seats on that one model; Arena skips cross-vendor judging.
 
 Without the target or a readable model snapshot, pstack works in the conversation. Swarm handles its slices serially, Arena compares alternatives without workers, and Interrogate runs one review and reruns findings against the real scope. If a started task's model cannot be verified, pstack discards its output; it does not duplicate the work until OMO confirms the task stopped.
 
-## Parallel tasks and workflow graphs
-
-`ulw $poteto-mode …` combines OMO's verification discipline with pstack's playbooks. Ordinary `$swarm` uses native tasks and appears in **Agents**. For a phase that really has dependencies, ask pstack to use the native workflow graph:
-
-```text
-ulw $poteto-mode 用 OMO 工作流图并行梳理两个模块，等两份只读报告都落到临时文件后，再核对它们是否一致。不要改项目文件。
-```
-
-With `pstack-worker` registered, this path pins the same model and reasoning level on every node and checks OMO's task receipts before using node results. Open the run under **Workflows**. Data moves through named scratch files, not through the graph edges. Production edits still use isolated tasks or run in the main conversation, because OMO's workflow nodes do not expose per-node checkout isolation.
-
-Direct `mass ulw`, native planning, execute, and loop retain their own model routing. The pstack guard does not change those host workflows. Peer threads are for conversation history and handoff, not for replacing child tasks.
-
-This adapter covers the interactive workflows. It does not provide Cursor cloud agents, Automations, or a full unattended PR runner.
+The adapter does not change how pstack sequences its playbooks or how OMO runs its own workflows. It does not provide Cursor cloud agents, Automations, or a full unattended PR runner.

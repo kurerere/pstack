@@ -8,8 +8,6 @@ disable-model-invocation: true
 
 Adversaries try to break a change or a design. A finding survives only when a run proves it. Report the findings. Do not apply fixes.
 
-In OMO, follow the installed [OMO mapping](../poteto-mode/references/omo.md) instead of selecting reviewer models. If the mapping or the verified same-model task route is unavailable, skip the Arena steps and apply the review brief once in the parent. Keep the verification step and report that no independent panel ran.
-
 ## Frame
 
 The scope is what the user names. Otherwise it is the branch diff from its merge base with the base branch, through the working tree. State the intent with the **in-your-own-words** skill, from the user's message, the commits, and the PR description. Ask the user when the intent is unclear.

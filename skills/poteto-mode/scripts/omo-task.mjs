@@ -1,5 +1,7 @@
-import { matchesOmoRoute, readOmoRoute, workerTarget } from "./omo-route.mjs";
-
+const parentCommand =
+  'printf "PSTACK_PARENT=%s|%s|%s\\n" "$PI_PROVIDER" "$PI_MODEL" "$PI_REASONING_LEVEL"';
+const parentLine =
+  /^PSTACK_PARENT=([^|\s/:]+)\|([^|\s]+)\|(off|minimal|low|medium|high|xhigh|max)$/m;
 const taskIdPattern = /^st_[0-9a-f]+$/;
 const liveStatuses = new Set(["pending", "running", "completed"]);
 const deniedStatuses = new Set([
@@ -17,6 +19,30 @@ const stoppedStatuses = new Set([
 const planError =
   /^(?:Subagent type "pstack-worker" is not an available agent\.|The task model pin "|No senpi model registry is available)/;
 
+function matchesOmoRoute(entry, { provider, modelId, reasoning, model }) {
+  const resolved = entry.resolved_model;
+  const effective = entry.effective_model;
+  const resolvedId = resolved?.model_id;
+  const priorityUpstream =
+    effective?.service_tier === "priority" &&
+    effective.provider === provider &&
+    `${effective.model_id}-fast` === resolvedId;
+  const resolvedMatches =
+    resolvedId === modelId ||
+    (resolvedId === `${modelId}-fast` &&
+      (entry.model === model ||
+        (priorityUpstream && effective.model_id === modelId)));
+  return (
+    resolved?.source === "explicit" &&
+    resolved.provider === provider &&
+    resolvedMatches &&
+    resolved.reasoning === reasoning &&
+    (!effective ||
+      (effective.provider === provider && effective.model_id === resolvedId) ||
+      priorityUpstream)
+  );
+}
+
 export async function dispatchSameModelTasks(tool, briefs) {
   if (!Array.isArray(briefs) || briefs.length === 0)
     throw new TypeError("Expected at least one pstack task brief");
@@ -27,16 +53,20 @@ export async function dispatchSameModelTasks(tool, briefs) {
     ...(isolated === true ? { isolated: true, apply: false } : {}),
   }));
 
-  const route = await readOmoRoute(tool);
-  if (!route) {
+  const snapshot = await tool.bash({ command: parentCommand, timeout: 10 });
+  const match =
+    typeof snapshot.text === "string" ? parentLine.exec(snapshot.text) : null;
+  if (snapshot.hasError || snapshot.details?.status !== "completed" || !match) {
     return {
       kind: "fallback",
       reason: "OMO did not expose the active model and reasoning level",
     };
   }
-  const { model } = route;
+  const [, provider, modelId, reasoning] = match;
+  const model = `${provider}/${modelId}:${reasoning}`;
+  const route = { provider, modelId, reasoning, model };
   const response = await tool.task({
-    subagent_type: workerTarget,
+    subagent_type: "pstack-worker",
     model,
     run_in_background: true,
     tasks,

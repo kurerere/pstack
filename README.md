@@ -39,8 +39,6 @@ npx skills add backnotprop/pstack
 
 The CLI shows every skill in a list you can search. Select the skills you want, then select your agents.
 
-Using OMO? Import the `skills/` folders with your existing skill manager (for example, Magpie) and start with `$poteto-mode`. See the [OMO adapter](docs/harness/omo.md) for installation and delegation limits.
-
 ## Skills
 
 Cursor's original README is [further down this page](#pstack).
