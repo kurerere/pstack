@@ -1,7 +1,5 @@
-const parentCommand =
-  'printf "PSTACK_PARENT=%s|%s|%s\\n" "$PI_PROVIDER" "$PI_MODEL" "$PI_REASONING_LEVEL"';
-const parentLine =
-  /^PSTACK_PARENT=([^|\s/:]+)\|([^|\s]+)\|(off|minimal|low|medium|high|xhigh|max)$/m;
+import { matchesOmoRoute, readOmoRoute, workerTarget } from "./omo-route.mjs";
+
 const taskIdPattern = /^st_[0-9a-f]+$/;
 const liveStatuses = new Set(["pending", "running", "completed"]);
 const deniedStatuses = new Set([
@@ -29,19 +27,16 @@ export async function dispatchSameModelTasks(tool, briefs) {
     ...(isolated === true ? { isolated: true, apply: false } : {}),
   }));
 
-  const snapshot = await tool.bash({ command: parentCommand, timeout: 10 });
-  const match =
-    typeof snapshot.text === "string" ? parentLine.exec(snapshot.text) : null;
-  if (snapshot.hasError || snapshot.details?.status !== "completed" || !match) {
+  const route = await readOmoRoute(tool);
+  if (!route) {
     return {
       kind: "fallback",
       reason: "OMO did not expose the active model and reasoning level",
     };
   }
-  const [, provider, modelId, reasoning] = match;
-  const model = `${provider}/${modelId}:${reasoning}`;
+  const { model } = route;
   const response = await tool.task({
-    subagent_type: "pstack-worker",
+    subagent_type: workerTarget,
     model,
     run_in_background: true,
     tasks,
@@ -87,26 +82,7 @@ export async function dispatchSameModelTasks(tool, briefs) {
         };
       }
 
-      const resolved = entry.resolved_model;
-      const effective = entry.effective_model;
-      const resolvedId = resolved?.model_id;
-      const requestedModelMatches =
-        resolvedId === modelId ||
-        (entry.model === model && resolvedId === `${modelId}-fast`);
-      const effectiveModelMatches =
-        !effective ||
-        (effective.provider === provider &&
-          (effective.model_id === resolvedId ||
-            (effective.service_tier === "priority" &&
-              `${effective.model_id}-fast` === resolvedId)));
-      if (
-        liveStatuses.has(status) &&
-        resolved?.source === "explicit" &&
-        resolved.provider === provider &&
-        requestedModelMatches &&
-        resolved.reasoning === reasoning &&
-        effectiveModelMatches
-      ) {
+      if (liveStatuses.has(status) && matchesOmoRoute(entry, route)) {
         return { kind: "started", taskId: id };
       }
 

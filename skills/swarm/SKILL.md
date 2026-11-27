@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 In OMO, follow the installed [OMO mapping](../poteto-mode/references/omo.md) instead of selecting worker models. If the mapping or the verified same-model task route is unavailable, run the slices in the parent and retain the evidence requirements. Report serial coverage, not a parallel run or race.
 
+Keep independent slices and races on the native task route. When the user asks for OMO's workflow graph and the work has a real dependency, use the mapping's native workflow path for Phase B and collect its verified results in Phase C. Use checked handoff files between phases; do not turn the main conversation's own steps into worker nodes.
+
 ## Start
 
 Open a todolist with one entry per phase before launching anything.

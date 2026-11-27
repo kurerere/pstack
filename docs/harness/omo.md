@@ -18,6 +18,16 @@ Choose the model and reasoning level in OMO's conversation controls. `setup-psta
 
 Without the target or a readable model snapshot, pstack works in the conversation. Swarm handles its slices serially, Arena compares alternatives without workers, and Interrogate runs one review and reruns findings against the real scope. If a started task's model cannot be verified, pstack discards its output; it does not duplicate the work until OMO confirms the task stopped.
 
-OMO's `ulw $poteto-mode …` combination uses both the native Ultrawork mode and pstack instructions. Native planning, execute, loop, and DAG workflows retain their own routing; the `pstack-worker` guard does not control them.
+## Parallel tasks and workflow graphs
+
+`ulw $poteto-mode …` combines OMO's verification discipline with pstack's playbooks. Ordinary `$swarm` uses native tasks and appears in **Agents**. For a phase that really has dependencies, ask pstack to use the native workflow graph:
+
+```text
+ulw $poteto-mode 用 OMO 工作流图并行梳理两个模块，等两份只读报告都落到临时文件后，再核对它们是否一致。不要改项目文件。
+```
+
+With `pstack-worker` registered, this path pins the same model and reasoning level on every node and checks OMO's task receipts before using node results. Open the run under **Workflows**. Data moves through named scratch files, not through the graph edges. Production edits still use isolated tasks or run in the main conversation, because OMO's workflow nodes do not expose per-node checkout isolation.
+
+Direct `mass ulw`, native planning, execute, and loop retain their own model routing. The pstack guard does not change those host workflows. Peer threads are for conversation history and handoff, not for replacing child tasks.
 
 This adapter covers the interactive workflows. It does not provide Cursor cloud agents, Automations, or a full unattended PR runner.
