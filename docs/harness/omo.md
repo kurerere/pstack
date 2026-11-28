@@ -10,7 +10,7 @@ $poteto-mode Trace how the retry limit is chosen. Cite the code that sets it and
 
 ## Standalone skill calls
 
-`$poteto-mode` loads the mapping itself. To also call pstack skills directly, such as `$swarm` or `$arena`, add this rule to Magpie's global instructions. It applies only in OMO:
+`$poteto-mode` loads the mapping itself. To also call pstack skills directly, such as `$swarm` or `$arena`, add the following rule to OMO's user instructions (`~/.omo/agent/AGENTS.md`), or to Magpie's global instructions if it manages them.
 
 ```markdown
 In OMO, before running any pstack skill, including a direct invocation, read
@@ -25,7 +25,15 @@ Until that rule is active, start with `$poteto-mode` rather than invoking pstack
 
 ## Optional same-model tasks
 
-In a trusted workspace, add the [`pstack-worker` declaration](../../skills/poteto-mode/references/omo-worker.json) to `.omo/omo.json` and start a new OMO conversation. If the workspace already has `.omo/omo.json` or `.omo/omo.jsonc`, merge only `agents.pstack-worker` into that file. This declaration names a native task target; it contains no model, reasoning level, or fallback chain.
+If your OMO installation already routes tasks by category, use its existing resolver. Register the resolver command in your OMO user instructions as `categoryRouteCommand` for pstack. It must match the current session, including reasoning and service tier, to a category configured with one model. On success its stdout is one JSON object, for example:
+
+```json
+{"category":"my-review","provider":"my-provider","modelId":"my-model","reasoning":"high","serviceTier":"auto"}
+```
+
+`modelId` is the exact model ID pinned by the category, including a priority alias if applicable. The resolver exits unsuccessfully when the live session has no matching category. The adapter then uses the parent conversation. It never tries the worker route after a category lookup fails.
+
+For installations without category routing, add the [`pstack-worker` declaration](../../skills/poteto-mode/references/omo-worker.json) to a trusted workspace's `.omo/omo.json` and start a new OMO conversation. If the workspace already has `.omo/omo.json` or `.omo/omo.jsonc`, merge only `agents.pstack-worker` into that file. This declaration names a native task target; it contains no model, reasoning level, or fallback chain.
 
 Choose the model and reasoning level in OMO's conversation controls. `setup-pstack` is a no-op in OMO. When a pstack playbook delegates, it reads the live settings and uses those exact values for each native `task`. It accepts only matching OMO receipts, never another model or a category fallback. Arena and Interrogate can run three independent seats on that one model; Arena skips cross-vendor judging.
 

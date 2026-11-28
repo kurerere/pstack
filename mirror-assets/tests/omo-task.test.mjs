@@ -10,6 +10,156 @@ const activeSession = async () => ({
   text: "PSTACK_PARENT=provider|current|high",
 });
 
+const categoryRoute = {
+  category: "review",
+  provider: "provider",
+  modelId: "current",
+  reasoning: "high",
+  serviceTier: "auto",
+};
+const categoryRouteCommand = "user-configured-resolver --json";
+const categoryReceipt = {
+  task_id: "st_abcd",
+  status: "running",
+  category: "review",
+  resolved_model: {
+    source: "category",
+    provider: "provider",
+    model_id: "current",
+    reasoning_effort: "high",
+  },
+};
+
+test("a fresh category lookup controls each batch without a call-site model pin", async () => {
+  let snapshot = categoryRoute;
+  const tool = {
+    bash: async ({ command }) => {
+      expect(command).toBe(categoryRouteCommand);
+      return {
+        details: { status: "completed" },
+        text: JSON.stringify(snapshot),
+      };
+    },
+    task: async (args) => {
+      expect(args).toEqual({
+        category: snapshot.category,
+        tasks: [{ ...brief, isolated: true, apply: false }, brief],
+        run_in_background: true,
+      });
+      const receipt = { ...categoryReceipt, category: args.category };
+      return {
+        details: { items: [receipt, { ...receipt, task_id: "st_1234" }] },
+      };
+    },
+  };
+  for (const category of ["review", "second"]) {
+    snapshot = { ...categoryRoute, category };
+    const result = await dispatchSameModelTasks(
+      tool,
+      [{ ...brief, isolated: true }, brief],
+      { categoryRouteCommand },
+    );
+    expect(result.items).toEqual([
+      { kind: "started", taskId: "st_abcd" },
+      { kind: "started", taskId: "st_1234" },
+    ]);
+  }
+});
+
+test.each([
+  ["review", 0],
+  [JSON.stringify({ ...categoryRoute, reasoning: null }), 0],
+  [JSON.stringify(categoryRoute), 1],
+])(
+  "invalid or unsuccessful category lookup never dispatches",
+  async (text, exitCode) => {
+    const result = await dispatchSameModelTasks(
+      {
+        bash: async () => ({
+          details: { status: "completed", exitCode },
+          text,
+        }),
+        task: () => {
+          throw new Error("Unexpected dispatch");
+        },
+      },
+      [brief],
+      { categoryRouteCommand },
+    );
+    expect(result.kind).toBe("fallback");
+  },
+);
+
+test.each([
+  [{}, "current", "auto", "started"],
+  [{ category: "other" }, "current", "auto", "fallback"],
+  [{ fallback_models: ["another"] }, "current", "auto", "fallback"],
+  [
+    { effective_model: { provider: "other", model_id: "current" } },
+    "current",
+    "auto",
+    "fallback",
+  ],
+  [
+    {
+      effective_model: {
+        provider: "provider",
+        model_id: "current",
+        reasoning: "low",
+      },
+    },
+    "current",
+    "auto",
+    "fallback",
+  ],
+  [
+    {
+      effective_model: {
+        provider: "provider",
+        model_id: "current",
+        service_tier: "priority",
+      },
+    },
+    "current-fast",
+    "priority",
+    "started",
+  ],
+  [
+    { effective_model: { provider: "provider", model_id: "current" } },
+    "current-fast",
+    "priority",
+    "fallback",
+  ],
+])(
+  "validates the native category and effective route",
+  async (overrides, modelId, serviceTier, kind) => {
+    const result = await dispatchSameModelTasks(
+      {
+        bash: async () => ({
+          details: { status: "completed" },
+          text: JSON.stringify({ ...categoryRoute, modelId, serviceTier }),
+        }),
+        task: async () => ({
+          details: {
+            ...categoryReceipt,
+            resolved_model: {
+              ...categoryReceipt.resolved_model,
+              model_id: modelId,
+            },
+            ...overrides,
+          },
+        }),
+        task_cancel: async ({ task_id }) => ({
+          details: { task_id, status: "cancelled" },
+        }),
+      },
+      [brief],
+      { categoryRouteCommand },
+    );
+    expect(result.items[0].kind).toBe(kind);
+  },
+);
+
 test("no task starts when OMO cannot report the parent reasoning level", async () => {
   const result = await dispatchSameModelTasks(
     {
