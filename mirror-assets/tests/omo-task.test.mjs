@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { dispatchSameModelTasks } from "../../skills/poteto-mode/scripts/omo-task.mjs";
 
+const shell = process.platform === "win32" ? "powershell" : "bash";
 const brief = {
   prompt: "TASK: Review the selected file.",
   task_summary: "Review file",
@@ -33,7 +34,7 @@ const categoryReceipt = {
 test("a fresh category lookup controls each batch without a call-site model pin", async () => {
   let snapshot = categoryRoute;
   const tool = {
-    bash: async ({ command }) => {
+    [shell]: async ({ command }) => {
       expect(command).toBe(categoryRouteCommand);
       return {
         details: { status: "completed" },
@@ -66,6 +67,19 @@ test("a fresh category lookup controls each batch without a call-site model pin"
   }
 });
 
+test("accepts native text-only shell success and rejects a failed lookup", async () => {
+  const route = { text: JSON.stringify(categoryRoute) };
+  const tool = {
+    [shell]: async () => route,
+    task: async () => ({ details: categoryReceipt }),
+  };
+  const dispatch = () =>
+    dispatchSameModelTasks(tool, [brief], { categoryRouteCommand });
+  expect((await dispatch()).items[0].kind).toBe("started");
+  route.hasError = true;
+  expect((await dispatch()).kind).toBe("fallback");
+});
+
 test.each([
   ["review", 0],
   [JSON.stringify({ ...categoryRoute, reasoning: null }), 0],
@@ -75,7 +89,7 @@ test.each([
   async (text, exitCode) => {
     const result = await dispatchSameModelTasks(
       {
-        bash: async () => ({
+        [shell]: async () => ({
           details: { status: "completed", exitCode },
           text,
         }),
@@ -135,7 +149,7 @@ test.each([
   async (overrides, modelId, serviceTier, kind) => {
     const result = await dispatchSameModelTasks(
       {
-        bash: async () => ({
+        [shell]: async () => ({
           details: { status: "completed" },
           text: JSON.stringify({ ...categoryRoute, modelId, serviceTier }),
         }),
@@ -163,7 +177,7 @@ test.each([
 test("no task starts when OMO cannot report the parent reasoning level", async () => {
   const result = await dispatchSameModelTasks(
     {
-      bash: async () => ({
+      [shell]: async () => ({
         details: { status: "completed" },
         text: "PSTACK_PARENT=provider|current|",
       }),
@@ -181,7 +195,7 @@ test("a task with a different reasoning level is not returned as usable", async 
   const stopped = new Set();
   const result = await dispatchSameModelTasks(
     {
-      bash: activeSession,
+      [shell]: activeSession,
       task: async () => ({
         details: {
           task_id: "st_1234",
@@ -215,7 +229,7 @@ test.each([
   async (model, tier, outcome) => {
     const result = await dispatchSameModelTasks(
       {
-        bash: async () => ({
+        [shell]: async () => ({
           ...(await activeSession()),
           text: `PSTACK_PARENT=provider|${model}|high`,
         }),
@@ -251,7 +265,7 @@ test.each([
 test("a cancel request without a terminal receipt does not permit duplicate work", async () => {
   const result = await dispatchSameModelTasks(
     {
-      bash: activeSession,
+      [shell]: activeSession,
       task: async () => ({
         details: {
           task_id: "st_2345",
@@ -277,7 +291,7 @@ test("a cancel request without a terminal receipt does not permit duplicate work
 test("a paused task stays on hold rather than starting a fallback", async () => {
   const result = await dispatchSameModelTasks(
     {
-      bash: activeSession,
+      [shell]: activeSession,
       task: async () => ({ details: { task_id: "st_3456", status: "paused" } }),
       task_cancel: async () => {
         throw new Error("A held task was cancelled");
