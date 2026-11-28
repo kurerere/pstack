@@ -2,6 +2,8 @@
 
 pstack skills use Cursor names. In Antigravity, read this file once per session, then map each Cursor name in a skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/`; per-skill installs ship only `skills/<name>/`, so this file may be absent — in that case the Antigravity line in `skills/poteto-mode/SKILL.md` carries the essentials. If a Cursor field has no row, drop it and say so. Never pass a field or value the tool schema rejects.
 
+Run pstack skills in the default Antigravity conversation (`agy acp` without `--agent` for ACP). Google bills conversations run by custom agents, including plugin agents and their subagents, at a higher quota rate. Selecting `model: inherit` controls the model only. [Antigravity maintainer’s explanation](https://github.com/google-antigravity/antigravity-cli/issues/1890#issuecomment-7228660501)
+
 ## Tools
 
 | Cursor | Antigravity |
@@ -15,13 +17,15 @@ pstack skills use Cursor names. In Antigravity, read this file once per session,
 
 ## Subagent fields
 
+Apply this mapping even when a routed skill names a registered plugin agent. Delegate only when the user requests workers. Otherwise, or if the required built-in is unavailable with model inheritance, do the step in the parent. For a panel, report how many independent seats actually ran.
+
 | Cursor | Antigravity |
 | --- | --- |
-| `subagent_type: generalPurpose` | `invoke_subagent` with the built-in `self` agent (same tools and instructions as the parent) or a transient role via `define_subagent`. |
-| `poteto-agent` | Register a custom subagent at `~/.gemini/config/agents/poteto-agent.md` (frontmatter `subagent: true`, `model: "inherit"`) or spawn `self`/`define_subagent` with a prompt opening "Read <absolute path to skills/poteto-mode/SKILL.md> in full, including its Principles section, before any work." |
-| `comment-sicko` | Same, with the full `skills/no-comments/references/comment-sicko.md` prompt as its body or in the brief. |
-| `readonly: true` | The built-in `research` agent (codebase exploration), or `define_subagent` with read-only `tools` (e.g. `view_file`, `grep_search`, `find_by_name`). |
-| `readonly: false` | `self` or a custom subagent with the default tool set. |
+| `subagent_type: generalPurpose` | Use the built-in `self` for work that needs write access and `research` for read-only exploration. |
+| `poteto-agent` | Give the appropriate built-in the usual `worker.md` kickoff, then the absolute path to `skills/poteto-mode/SKILL.md` to read in full, including Principles, before doing the task. |
+| `comment-sicko` | Use `self` for the scoped comment edits. Pass the verbatim `skills/no-comments/references/comment-sicko.md` prompt and the scope. |
+| `readonly: true` | Use the built-in `research` agent. |
+| `readonly: false` | Use the built-in `self` agent. |
 | `environment: "cloud"` | No remote cloud workers. Use workspace option `branch` for an isolated Git worktree, `share` for shared directory storage. |
 | `environment: "local"` | Workspace option `inherit` — same workspace as the parent. |
 | `cloud_base_branch: <b>` | With `branch`, name the base branch or commit in the brief. |
@@ -34,14 +38,14 @@ pstack skills use Cursor names. In Antigravity, read this file once per session,
 
 | Cursor | Antigravity |
 | --- | --- |
-| A `claude-*`, `gemini-*`, or other slug on a `model:` field | `model` takes tiers, not slugs: `inherit`, `flash_lite`, `flash`, `pro`. Drop every Cursor slug. |
+| A `claude-*`, `gemini-*`, or other slug on a `model:` field | Use `model: "inherit"` for pstack roles. |
 | `auto` or `inherit-parent` | `model: "inherit"` — the default — so the worker runs on the parent's model. |
 | The `pstack-models` settings file | No equivalent file is loaded. Per-role lines have no effect; a rule pinning `inherit` is the equivalent. |
-| Diverse-vendor panels (`arena`, `interrogate`) | Every seat can still run as an independent worker, but tier choice is limited to `inherit`/`flash_lite`/`flash`/`pro`. A true cross-vendor panel is only possible if the seats run different sessions' models, which `invoke_subagent` cannot do — report any panel as single-model unless a cross-vendor path was actually used. |
+| Diverse-vendor panels (`arena`, `interrogate`) | Keep the requested seat count (three by default) on the inherited model when delegating. Skip the cross-vendor judge and report the panel as single-model. |
 
 ## setup-pstack
 
-Antigravity selects subagent models by tier (`inherit`/`flash_lite`/`flash`/`pro`), not by pstack's per-role slugs, so `/setup-pstack` cannot write effective settings. State that limitation; the useful local equivalent is a rule pinning `model: "inherit"` on custom subagents.
+In Antigravity, `/setup-pstack` explains that workers inherit the model selected in the parent conversation. Finish setup there without writing per-role settings.
 
 ## Paths
 

@@ -15,6 +15,8 @@ Open a todolist with one entry per phase before launching anything.
 3. Aggregate
 4. Report
 
+In Antigravity, run this pstack skill in the default agent. For Phase A model selection and Phase B dispatch, use `model: inherit` with built-in `research` for read-only slices or `self` for writes. Give isolated writers a `branch` workspace. If the user has not requested workers or the route is unavailable, handle the slices in the parent and report that they ran sequentially.
+
 ## Phase A: Frame
 
 1. State the done predicate and the artifact or report the swarm must return.

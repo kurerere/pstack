@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 Open a todolist with one entry per phase (Frame, Fan out, Cross-judge, Pick, Graft, Verify) before launching anything.
 
+In Antigravity, use the built-in `self` for each candidate with `model: inherit` and an isolated workspace. This replaces model selection in Phase A, including when Interrogate uses these phases. Keep the requested seat count and skip the cross-vendor judge in Phase C. If the user has not requested workers or the route is unavailable, do the work in the parent and report zero independent seats.
+
 ## Phase A: Frame
 
 Every candidate gets the same prompt, so the prompt is the contract.
