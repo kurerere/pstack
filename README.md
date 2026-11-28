@@ -39,6 +39,8 @@ npx skills add backnotprop/pstack
 
 The CLI shows every skill in a list you can search. Select the skills you want, then select your agents.
 
+For OmO Native (Senpi), install the skills from this fork, `kurerere/pstack`, and start with `$poteto-mode`. The [OMO guide](docs/harness/omo.md) covers Magpie, standalone skill calls, and same-model task routing.
+
 ## Skills
 
 Cursor's original README is [further down this page](#pstack).

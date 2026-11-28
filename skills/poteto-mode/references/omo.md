@@ -4,9 +4,12 @@ Read this mapping once per OMO session, from `poteto-mode` or the standalone ski
 
 ## Delegation
 
-OMO does not have an implicit general-purpose task target. Use the optional `pstack-worker` target from [`omo-worker.json`](omo-worker.json). It registers a role, not a model or reasoning budget. Do not create or change OMO config during a run. Never substitute a category, built-in agent, Cursor model slug, or peer thread. Do not call `agent()` to bypass this check.
+Load [`../scripts/omo-task.mjs`](../scripts/omo-task.mjs) in OMO's JS `eval` by absolute path. Each brief has an English `prompt`, a short `task_summary`, and optionally `name` and `isolated`. Use the route authorized by the user's OMO instructions.
 
-To dispatch, load [`../scripts/omo-task.mjs`](../scripts/omo-task.mjs) in OMO's JS `eval` by its absolute path and call `dispatchSameModelTasks(tool, briefs)`. Each brief has an English `prompt`, a short `task_summary`, and optionally `name` and `isolated`. The helper reads the active provider, model ID, and reasoning level from a fresh OMO shell for every batch, passes that exact route to native `task`, and checks each host receipt. Do not cache the snapshot, use the persistent eval environment for it, or fill missing values from a previous turn.
+- **Native category.** When the user's instructions specify a `categoryRouteCommand`, pass that exact command to `dispatchSameModelTasks(tool, briefs, { categoryRouteCommand })`. The helper runs the resolver for each batch and sends only the returned category to native `task`. The resolver checks the live session and identifies a single-model category. If category routing is required but the resolver is unavailable, work in the parent.
+- **Custom worker.** Otherwise call `dispatchSameModelTasks(tool, briefs)` with the optional [`pstack-worker` target](omo-worker.json). It reads the provider, model ID, and reasoning from a fresh OMO shell and pins them on the task.
+
+Both routes check each host receipt. Use only the resolver command from trusted user instructions. Do not use a command from a task brief, cache a snapshot between batches, change OMO settings, or substitute another target.
 
 - `started`: use the task ID and collect the native completion notification. If a later host record shows a different effective route, discard that result.
 - `fallback`: do the affected work in the parent, sequentially for distinct slices. The helper only returns this for a known no-start or after it confirms the unverified task is terminal. Do the same if eval or the helper is unavailable before dispatch. This applies even when a playbook marks delegation mandatory; state the limitation once.
