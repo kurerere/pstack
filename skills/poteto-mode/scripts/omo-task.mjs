@@ -1,5 +1,7 @@
-const parentCommand =
-  'printf "PSTACK_PARENT=%s|%s|%s\\n" "$PI_PROVIDER" "$PI_MODEL" "$PI_REASONING_LEVEL"';
+const isWindows = process.platform === "win32";
+const parentCommand = isWindows
+  ? '"PSTACK_PARENT=$env:PI_PROVIDER|$env:PI_MODEL|$env:PI_REASONING_LEVEL"'
+  : 'printf "PSTACK_PARENT=%s|%s|%s\\n" "$PI_PROVIDER" "$PI_MODEL" "$PI_REASONING_LEVEL"';
 const parentLine =
   /^PSTACK_PARENT=([^|\s/:]+)\|([^|\s]+)\|(off|minimal|low|medium|high|xhigh|max)$/m;
 const taskIdPattern = /^st_[0-9a-f]+$/;
@@ -60,14 +62,15 @@ async function readRoute(tool, categoryRouteCommand) {
     (typeof categoryRouteCommand !== "string" || !categoryRouteCommand.trim())
   )
     return null;
-  const snapshot = await tool.bash({
+  const snapshot = await tool[isWindows ? "powershell" : "bash"]({
     command: categoryRouteCommand ?? parentCommand,
     timeout: 10,
   });
   if (
     snapshot.hasError ||
-    snapshot.details?.status !== "completed" ||
-    (snapshot.details.exitCode ?? 0) !== 0 ||
+    (snapshot.details?.status !== undefined &&
+      snapshot.details.status !== "completed") ||
+    (snapshot.details?.exitCode ?? 0) !== 0 ||
     typeof snapshot.text !== "string"
   )
     return null;

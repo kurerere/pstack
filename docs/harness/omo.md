@@ -25,7 +25,7 @@ Until that rule is active, start with `$poteto-mode` rather than invoking pstack
 
 ## Optional same-model tasks
 
-If your OMO installation already routes tasks by category, use its existing resolver. Register the resolver command in your OMO user instructions as `categoryRouteCommand` for pstack. It must match the current session, including reasoning and service tier, to a category configured with one model. On success its stdout is one JSON object, for example:
+If your OMO installation already routes tasks by category, use its existing resolver. Register the resolver command in your OMO user instructions as `categoryRouteCommand` for pstack. The adapter runs it in OMO's PowerShell tool on Windows and Bash elsewhere. It must match the current session, including reasoning and service tier, to a category configured with one model. On success its stdout is one JSON object, for example:
 
 ```json
 {"category":"my-review","provider":"my-provider","modelId":"my-model","reasoning":"high","serviceTier":"auto"}
